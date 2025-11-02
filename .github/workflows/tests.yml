@@ -5,20 +5,21 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    # 👇 Make the tests deterministic & stable on CI
+    # Stable API endpoint + headless browser for CI
     env:
       MAF_API_BASE: https://httpstat.us
-      MAF_HEALTH_PATH: /200
-      MAF_HEADLESS: "true"    # UI runs headless on CI
+      MAF_HEALTH_PATH: /200     # IMPORTANT: httpstat.us uses /200
+      MAF_HEADLESS: "true"
       PYTHONUNBUFFERED: "1"
 
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v4
 
     - name: Set up Python
@@ -34,26 +35,25 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: Install dependencies
+    - name: Install deps
       run: |
         python -m pip install --upgrade pip
         pip install -e .[dev]
-        # playwright system deps are already present on GitHub-hosted Ubuntu
-        python -m playwright install
+        python -m playwright install --with-deps
 
-    # ✅ Required: API tests — now aimed at httpstat.us/200
+    # ✅ Hard requirement: API tests must pass
     - name: Run API tests
       run: |
         pytest tests/api -q --html=report.html --self-contained-html
 
-    - name: Upload API test report
+    - name: Upload API report
       if: always()
       uses: actions/upload-artifact@v4
       with:
         name: pytest-report
         path: report.html
 
-    # 🟡 Optional: UI tests (won’t fail the job)
+    # 🟡 Optional: UI tests (non-blocking so they can’t make the badge red)
     - name: Run UI tests (non-blocking)
       continue-on-error: true
       run: |

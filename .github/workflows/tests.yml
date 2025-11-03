@@ -12,11 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     # Stable API endpoint + headless browser for CI
-    env:
-      MAF_API_BASE: https://httpstat.us
-      MAF_HEALTH_PATH: /200     # IMPORTANT: httpstat.us uses /200
-      MAF_HEADLESS: "true"
-      PYTHONUNBUFFERED: "1"
+env:
+  MAF_API_BASE: https://httpbin.org
+  MAF_HEALTH_PATH: /status/200
+  MAF_HEADLESS: "true"
+  PYTHONUNBUFFERED: "1"
+
 
     steps:
     - name: Checkout

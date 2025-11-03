@@ -1,61 +1,57 @@
-name: 🧪 Run Pytest on Push
+name: CI
 
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: {}   # allow manual runs from the Actions tab
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
-    # Stable API endpoint + headless browser for CI
-env:
-  MAF_API_BASE: https://httpbin.org
-  MAF_HEALTH_PATH: /status/200
-  MAF_HEADLESS: "true"
-  PYTHONUNBUFFERED: "1"
-
+    # Environment used by tests
+    env:
+      MAF_API_BASE: https://httpbin.org
+      MAF_HEALTH_PATH: /status/200
+      MAF_HEADLESS: "true"
+      PYTHONUNBUFFERED: "1"
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.10"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-    - name: Cache pip
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
+          restore-keys: ${{ runner.os }}-pip-
 
-    - name: Install deps
-      run: |
-        python -m pip install --upgrade pip
-        pip install -e .[dev]
-        python -m playwright install --with-deps
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .[dev]
+          python -m playwright install --with-deps
 
-    # ✅ Hard requirement: API tests must pass
-    - name: Run API tests
-      run: |
-        pytest tests/api -q --html=report.html --self-contained-html
+      # ✅ API tests must pass
+      - name: Run API tests
+        run: pytest tests/api -q --html=report.html --self-contained-html
 
-    - name: Upload API report
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: pytest-report
-        path: report.html
+      - name: Upload API report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-report
+          path: report.html
 
-    # 🟡 Optional: UI tests (non-blocking so they can’t make the badge red)
-    - name: Run UI tests (non-blocking)
-      continue-on-error: true
-      run: |
-        pytest tests/ui -q
+      # 🟡 UI tests are non-blocking
+      - name: Run UI tests (non-blocking)
+        continue-on-error: true
+        run: pytest tests/ui -q

@@ -1,5 +1,5 @@
 # 🧩 Mini Automation Framework (Page/Object Model)
-![CI](https://github.com/douglasalfaro/mini-automation-framework/actions/workflows/tests.yml/badge.svg)
+[![CI](https://github.com/douglasalfaro/mini-automation-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/douglasalfaro/mini-automation-framework/actions/workflows/ci.yml)
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
 ![Pytest](https://img.shields.io/badge/Pytest-Framework-green.svg)
